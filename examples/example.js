@@ -1,6 +1,6 @@
-var enumBuilder = require('@bluefin605/entmodeller-devops-enumerator')
 var ent = require('@bluefin605/entmodeller')
 var modellerBuilder = require('../src/Builder.js')
+var enumBuilder = require('@bluefin605/entmodeller-devops-enumerator')
 
 var overides = [{ name: 'queueJ', style: 'styleB', relationshipGroup: 'override', entityGroup: 'entoverride' }, { name: 'serviceE', style: 'styleC', relationshipGroup: 'override' }];
 
@@ -34,21 +34,17 @@ async function enumerateDevOps() {
     lambda: ent.EntModeller.DotShapes.oval,
   }
 
-  var enumerator = new enumBuilder.Builder()
+  var modeller = new modellerBuilder.Builder()
     .setConfigFromFile('examples\\config.json')
     .addDefaultFilter(isDev)
     .addAttachment('appsettings', 'appsettings.json', (a) => a.relativePath.includes('Unit') === false, enumBuilder.JsonMapper)
-    .build()
-
-  var modeller = new modellerBuilder.Builder()
-    .setEnumerator(enumerator)
     .addEntityOverrides(overides)
     .addRelationshipFills(relFilles)
     .addEntityFills(entFilles)
     .outputAsDOTDefaultServices(styles)
     // .outputAsDOT(ss, styles)
     .addAttachmentMapping('appsettings', (r, a, e) => {
-      return modellerBuilder.json.allChildren(a, (j) => j?.ActiveMQ?.Publishers).map(m => {
+      return modellerBuilder.mappers.allChildren(a, (j) => j?.ActiveMQ?.Publishers).map(m => {
         return {
           from: { name: r.pipeline, type: 'service' },
           to: { name: m.Config.SenderLink, type: 'queue' }

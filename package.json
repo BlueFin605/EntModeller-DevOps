@@ -25,6 +25,6 @@
   },
   "dependencies": {
     "@bluefin605/entmodeller": "^2.0.18",
-    "@bluefin605/entmodeller-devops-enumerator": "^1.0.9"
+    "@bluefin605/entmodeller-devops-enumerator": "^1.0.10"
   }
 }

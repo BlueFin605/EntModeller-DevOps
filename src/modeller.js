@@ -1,6 +1,6 @@
 class myAzureSource {
-    constructor(enumerator, attachmentMappers, releaseMappers, environmentMappers) {
-        this.enumerator = enumerator;
+    constructor(devOpsEnumBuilder, attachmentMappers, releaseMappers, environmentMappers) {
+        this.devOpsEnumBuilder = devOpsEnumBuilder;
         this.attachmentMappers = attachmentMappers;
         this.releaseMappers = releaseMappers;
         this.environmentMappers = environmentMappers;
@@ -8,12 +8,14 @@ class myAzureSource {
 
     generateSourceConnections() {
         return new Promise((resolve, reject) => {
-            resolve(enumerateAzureReleases(this.enumerator, this.attachmentMappers, this.releaseMappers, this.environmentMappers))
+            resolve(enumerateAzureReleases(this.devOpsEnumBuilder, this.attachmentMappers, this.releaseMappers, this.environmentMappers))
         });
     }
 }
 
-async function modelAzureReleases(enumerator, entModellerBuilder, attachmentMappers, releaseMappers, environmentMappers) {
+async function modelAzureReleases(devOpsEnumBuilder, entModellerBuilder, attachmentMappers, releaseMappers, environmentMappers) {
+    var enumerator = devOpsEnumBuilder.build();
+
     var modeller = entModellerBuilder        
         .addSource("Azure", new myAzureSource(enumerator, attachmentMappers, releaseMappers, environmentMappers), null)
         .build();
@@ -22,12 +24,12 @@ async function modelAzureReleases(enumerator, entModellerBuilder, attachmentMapp
     console.log(output);
 }
 
-async function enumerateAzureReleases(enumerator, attachmentMappers, releaseMappers, environmentMappers) {
-    let releases = await enumerator.enumerateDevOps()
+async function enumerateAzureReleases(devOpsEnumBuilder, attachmentMappers, releaseMappers, environmentMappers) {
+    let releases = await devOpsEnumBuilder.enumerateDevOps()
 
-    console.log('---------------------------------------------------------------')
-    console.log(JSON.stringify(releases));
-    console.log('---------------------------------------------------------------')
+    // console.log('---------------------------------------------------------------')
+    // console.log(JSON.stringify(releases));
+    // console.log('---------------------------------------------------------------')
 
     let releasesWithAttachments = releases.filter(r => r.attachments.size > 0);
     let releasesWithEnvironment = releases.filter(r => r.environment?.variables != null);

@@ -1,5 +1,6 @@
 var devopsmodeller = require('../src/modeller.js')
 var ent = require('@bluefin605/entmodeller')
+var enumBuilder = require('@bluefin605/entmodeller-devops-enumerator')
 
 const DevOpsModeller = (function () {
     const _private = new WeakMap()
@@ -14,8 +15,8 @@ const DevOpsModeller = (function () {
     }
 
     class DevOpsModeller {
-        constructor(enumerator, entModellerBuilder, attachmentMappers, releaseMappers, environmentMappers) {
-            internal(this).enumerator = enumerator;
+        constructor(devOpsEnumBuilder, entModellerBuilder, attachmentMappers, releaseMappers, environmentMappers) {
+            internal(this).devOpsEnumBuilder = devOpsEnumBuilder;
             internal(this).entModellerBuilder = entModellerBuilder;
             internal(this).attachmentMappers = attachmentMappers;
             internal(this).releaseMappers = releaseMappers;
@@ -29,13 +30,44 @@ const DevOpsModeller = (function () {
                     internal(this).environmentMappers = [];
                     internal(this).releaseMappers = [];
                     internal(this).entModellerBuilder = new ent.EntModeller.Builder();
+                    internal(this).devOpsEnumBuilder = new enumBuilder.Builder();
                 }
 
-                setEnumerator(enumerator) {
-                    internal(this).enumerator = enumerator;
+                //===============================================================================================
+                // DevOps devOpsEnumBuilder builders
+                setConfigFromFile(filename) {
+                    internal(this).devOpsEnumBuilder.setConfigFromFile(filename);
                     return this
                 }
 
+                setPersonalAccessToken(pat) {
+                    internal(this).devOpsEnumBuilder.setPersonalAccessToken(pat);
+                    return this
+                }
+
+                setOrgaization(organization) {
+                    internal(this).devOpsEnumBuilder.setOrgaization(organization);
+                    return this
+                }
+
+                setProject(project) {
+                    internal(this).devOpsEnumBuilder.setProject(project);
+                    return this
+                }
+
+                addDefaultFilter(nameParser) {
+                    internal(this).devOpsEnumBuilder.addDefaultFilter(nameParser);
+                    return this
+                }
+                
+                addAttachment(id, filename, filter, mapper) {
+                    internal(this).devOpsEnumBuilder.addAttachment(id, filename, filter, mapper);
+                    return this
+                }
+
+
+                //===============================================================================================
+                // EntModeller builders
                 addEntityOverrides(overrides) {
                     internal(this).entModellerBuilder.addEntityOverrides(overrides);
                     return this
@@ -77,7 +109,7 @@ const DevOpsModeller = (function () {
                 }
 
                 build() {
-                    var tracer = new DevOpsModeller(internal(this).enumerator, internal(this).entModellerBuilder, internal(this).attachmentMappers, internal(this).releaseMappers, internal(this).environmentMappers);
+                    var tracer = new DevOpsModeller(internal(this).devOpsEnumBuilder, internal(this).entModellerBuilder, internal(this).attachmentMappers, internal(this).releaseMappers, internal(this).environmentMappers);
                     return tracer;
                 }
             }
@@ -86,7 +118,7 @@ const DevOpsModeller = (function () {
         }
 
         async modelDevOps() {
-            let results = devopsmodeller(internal(this).enumerator, internal(this).entModellerBuilder, internal(this).attachmentMappers, internal(this).releaseMappers, internal(this).environmentMappers);
+            let results = devopsmodeller(internal(this).devOpsEnumBuilder, internal(this).entModellerBuilder, internal(this).attachmentMappers, internal(this).releaseMappers, internal(this).environmentMappers);
             return results;
         }
     }
@@ -96,5 +128,5 @@ const DevOpsModeller = (function () {
 
 module.exports = {
     Builder: DevOpsModeller.Builder,
-    json: require('./JsonHelpers')
+    mappers: require('./Helpers')
  }
