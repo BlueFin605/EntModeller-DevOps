@@ -14,15 +14,16 @@ const DevOpsModeller = (function () {
     }
 
     class DevOpsModeller {
-        constructor(enumerator, entModellerBuilder) {
+        constructor(enumerator, entModellerBuilder, attachmentMappers) {
             internal(this).enumerator = enumerator;
             internal(this).entModellerBuilder = entModellerBuilder;
+            internal(this).attachmentMappers = attachmentMappers;
         }
 
         static get Builder() {
             class Builder {
                 constructor() {
-                    internal(this).filters = new Map()
+                    internal(this).attachmentMappers = [];
                     internal(this).entModellerBuilder = new ent.EntModeller.Builder();
                 }
 
@@ -56,8 +57,13 @@ const DevOpsModeller = (function () {
                     return this
                 }
 
+                addAttachmentMapping(id, mapper) {
+                    internal(this).attachmentMappers.push({id: id, mapper: mapper});
+                    return this;
+                }
+
                 build() {
-                    var tracer = new DevOpsModeller(internal(this).enumerator, internal(this).entModellerBuilder);
+                    var tracer = new DevOpsModeller(internal(this).enumerator, internal(this).entModellerBuilder, internal(this).attachmentMappers);
                     return tracer;
                 }
             }
@@ -66,7 +72,7 @@ const DevOpsModeller = (function () {
         }
 
         async modelDevOps() {
-            let results = devopsmodeller(internal(this).enumerator, internal(this).entModellerBuilder);
+            let results = devopsmodeller(internal(this).enumerator, internal(this).entModellerBuilder, internal(this).attachmentMappers);
             return results;
         }
     }
@@ -74,4 +80,7 @@ const DevOpsModeller = (function () {
     return DevOpsModeller
 }())
 
-module.exports.Builder = DevOpsModeller.Builder
+module.exports = {
+    Builder: DevOpsModeller.Builder,
+    json: require('./JsonHelpers')
+ }

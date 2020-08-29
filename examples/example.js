@@ -37,6 +37,7 @@ async function enumerateDevOps() {
   var enumerator = new enumBuilder.Builder()
     .setConfigFromFile('examples\\config.json')
     .addDefaultFilter(isDev)
+    .addAttachment('appsettings', 'appsettings.json', (a) => a.relativePath.includes('Unit') === false, enumBuilder.JsonMapper)
     .build()
 
   var modeller = new modellerBuilder.Builder()
@@ -46,14 +47,26 @@ async function enumerateDevOps() {
     .addEntityFills(entFilles)
     .outputAsDOTDefaultServices(styles)
     // .outputAsDOT(ss, styles)
+    .addAttachmentMapping('appsettings', (r, a, e) => {
+      return modellerBuilder.json.allChildren(a, (j) => j?.ActiveMQ?.Publishers).map(m => {
+        return {
+          from: { name: r.pipeline, type: 'service' },
+          to: { name: m.Config.SenderLink, type: 'queue' }
+        }
+      });
+    })
     .build();
 
   modeller.modelDevOps();
 }
 
 
-function isDev(name) {
-  return name.toLowerCase().includes("dev");
+function isDev(releaseName, environmentName) {
+  // console.log(`[raw]${dep.releaseDefinition.name}:${dep.release.name}:${dep.releaseEnvironment.name}`);
+  // if (releaseName.trim().includes('Fre.Consignment.Api v2') === false)
+  //     return false;
+
+  return environmentName.toLowerCase().includes("dev");
 }
 
 enumerateDevOps();
