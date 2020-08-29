@@ -1,26 +1,28 @@
 class myAzureSource {
-    constructor(enumerator, attachmentMappers) {
+    constructor(enumerator, attachmentMappers, releaseMappers, environmentMappers) {
         this.enumerator = enumerator;
         this.attachmentMappers = attachmentMappers;
+        this.releaseMappers = releaseMappers;
+        this.environmentMappers = environmentMappers;
     }
 
     generateSourceConnections() {
         return new Promise((resolve, reject) => {
-            resolve(enumerateAzureReleases(this.enumerator, this.attachmentMappers))
+            resolve(enumerateAzureReleases(this.enumerator, this.attachmentMappers, this.releaseMappers, this.environmentMappers))
         });
     }
 }
 
-async function modelAzureReleases(enumerator, entModellerBuilder, attachmentMappers) {
+async function modelAzureReleases(enumerator, entModellerBuilder, attachmentMappers, releaseMappers, environmentMappers) {
     var modeller = entModellerBuilder        
-        .addSource("Azure", new myAzureSource(enumerator, attachmentMappers), null)
+        .addSource("Azure", new myAzureSource(enumerator, attachmentMappers, releaseMappers, environmentMappers), null)
         .build();
 
     let output = await modeller.generateOutput();
     console.log(output);
 }
 
-async function enumerateAzureReleases(enumerator, attachmentMappers) {
+async function enumerateAzureReleases(enumerator, attachmentMappers, releaseMappers, environmentMappers) {
     let releases = await enumerator.enumerateDevOps()
 
     console.log('---------------------------------------------------------------')
@@ -28,6 +30,7 @@ async function enumerateAzureReleases(enumerator, attachmentMappers) {
     console.log('---------------------------------------------------------------')
 
     let releasesWithAttachments = releases.filter(r => r.attachments.size > 0);
+    let releasesWithEnvironment = releases.filter(r => r.environment?.variables != null);
 
     let results = [];
 
@@ -35,7 +38,13 @@ async function enumerateAzureReleases(enumerator, attachmentMappers) {
         let matches = releasesWithAttachments.filter(r => r.attachments.has(mapper.id));
         matches.forEach(m => {
             let attachment = m.attachments.get(mapper.id);
-            results = results.concat(mapper.mapper(m.release, attachment, m.environment));
+            results = results.concat(mapper.mapper(m.release, attachment, m.environment?.variables));
+        });
+    });
+
+    environmentMappers.forEach(mapper => {
+        releasesWithEnvironment.forEach(m => {
+            results = results.concat(mapper.mapper(m.release, m.environment?.variables));
         });
     });
 

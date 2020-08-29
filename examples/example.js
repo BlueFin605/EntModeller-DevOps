@@ -53,7 +53,16 @@ async function enumerateDevOps() {
           from: { name: r.pipeline, type: 'service' },
           to: { name: m.Config.SenderLink, type: 'queue' }
         }
-      });
+      })
+    })
+    .addEnvironmentMapping((r, e) => {
+      if (e.MqTopic == null)
+        return [];
+
+      return {
+        from: { name: r.pipeline, type: 'service' },
+        to: { name: e.MqTopic.value, type: 'queue' }
+      }
     })
     .build();
 

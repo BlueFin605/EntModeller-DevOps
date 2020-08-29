@@ -14,16 +14,20 @@ const DevOpsModeller = (function () {
     }
 
     class DevOpsModeller {
-        constructor(enumerator, entModellerBuilder, attachmentMappers) {
+        constructor(enumerator, entModellerBuilder, attachmentMappers, releaseMappers, environmentMappers) {
             internal(this).enumerator = enumerator;
             internal(this).entModellerBuilder = entModellerBuilder;
             internal(this).attachmentMappers = attachmentMappers;
+            internal(this).releaseMappers = releaseMappers;
+            internal(this).environmentMappers = environmentMappers;
         }
 
         static get Builder() {
             class Builder {
                 constructor() {
                     internal(this).attachmentMappers = [];
+                    internal(this).environmentMappers = [];
+                    internal(this).releaseMappers = [];
                     internal(this).entModellerBuilder = new ent.EntModeller.Builder();
                 }
 
@@ -62,8 +66,18 @@ const DevOpsModeller = (function () {
                     return this;
                 }
 
+                addReleaseMapping(mapper) {
+                    internal(this).releaseMappers.push({mapper: mapper});
+                    return this;
+                }
+
+                addEnvironmentMapping(mapper) {
+                    internal(this).environmentMappers.push({mapper: mapper});
+                    return this;
+                }
+
                 build() {
-                    var tracer = new DevOpsModeller(internal(this).enumerator, internal(this).entModellerBuilder, internal(this).attachmentMappers);
+                    var tracer = new DevOpsModeller(internal(this).enumerator, internal(this).entModellerBuilder, internal(this).attachmentMappers, internal(this).releaseMappers, internal(this).environmentMappers);
                     return tracer;
                 }
             }
@@ -72,7 +86,7 @@ const DevOpsModeller = (function () {
         }
 
         async modelDevOps() {
-            let results = devopsmodeller(internal(this).enumerator, internal(this).entModellerBuilder, internal(this).attachmentMappers);
+            let results = devopsmodeller(internal(this).enumerator, internal(this).entModellerBuilder, internal(this).attachmentMappers, internal(this).releaseMappers, internal(this).environmentMappers);
             return results;
         }
     }
