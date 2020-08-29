@@ -1,30 +1,31 @@
 class myAzureSource {
-    constructor(devOpsEnumBuilder, attachmentMappers, releaseMappers, environmentMappers) {
+    constructor(devOpsEnumBuilder, attachmentMappers, releaseMappers, environmentMappers, transformers) {
         this.devOpsEnumBuilder = devOpsEnumBuilder;
         this.attachmentMappers = attachmentMappers;
         this.releaseMappers = releaseMappers;
         this.environmentMappers = environmentMappers;
+        this.transformers = transformers
     }
 
     generateSourceConnections() {
         return new Promise((resolve, reject) => {
-            resolve(enumerateAzureReleases(this.devOpsEnumBuilder, this.attachmentMappers, this.releaseMappers, this.environmentMappers))
+            resolve(enumerateAzureReleases(this.devOpsEnumBuilder, this.attachmentMappers, this.releaseMappers, this.environmentMappers, this.transformers))
         });
     }
 }
 
-async function modelAzureReleases(devOpsEnumBuilder, entModellerBuilder, attachmentMappers, releaseMappers, environmentMappers) {
+async function modelAzureReleases(devOpsEnumBuilder, entModellerBuilder, attachmentMappers, releaseMappers, environmentMappers, transformers) {
     var enumerator = devOpsEnumBuilder.build();
 
     var modeller = entModellerBuilder        
-        .addSource("Azure", new myAzureSource(enumerator, attachmentMappers, releaseMappers, environmentMappers), null)
+        .addSource("Azure", new myAzureSource(enumerator, attachmentMappers, releaseMappers, environmentMappers, transformers), null)
         .build();
 
     let output = await modeller.generateOutput();
     console.log(output);
 }
 
-async function enumerateAzureReleases(devOpsEnumBuilder, attachmentMappers, releaseMappers, environmentMappers) {
+async function enumerateAzureReleases(devOpsEnumBuilder, attachmentMappers, releaseMappers, environmentMappers, transformers) {
     let releases = await devOpsEnumBuilder.enumerateDevOps()
 
     // console.log('---------------------------------------------------------------')
@@ -50,6 +51,13 @@ async function enumerateAzureReleases(devOpsEnumBuilder, attachmentMappers, rele
         });
     });
 
+    //transform all the names
+    results.forEach(r => {
+        transformers.forEach(t => {
+            r.from.name = t(r.from.name);
+            r.to.name = t(r.to.name);
+        })
+    });
     return results;
 }
 

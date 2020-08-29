@@ -15,12 +15,13 @@ const DevOpsModeller = (function () {
     }
 
     class DevOpsModeller {
-        constructor(devOpsEnumBuilder, entModellerBuilder, attachmentMappers, releaseMappers, environmentMappers) {
+        constructor(devOpsEnumBuilder, entModellerBuilder, attachmentMappers, releaseMappers, environmentMappers, transformers) {
             internal(this).devOpsEnumBuilder = devOpsEnumBuilder;
             internal(this).entModellerBuilder = entModellerBuilder;
             internal(this).attachmentMappers = attachmentMappers;
             internal(this).releaseMappers = releaseMappers;
             internal(this).environmentMappers = environmentMappers;
+            internal(this).transformers = transformers;
         }
 
         static get Builder() {
@@ -29,8 +30,29 @@ const DevOpsModeller = (function () {
                     internal(this).attachmentMappers = [];
                     internal(this).environmentMappers = [];
                     internal(this).releaseMappers = [];
+                    internal(this).transformers = [];
                     internal(this).entModellerBuilder = new ent.EntModeller.Builder();
                     internal(this).devOpsEnumBuilder = new enumBuilder.Builder();
+                }
+
+                addNameTransformation(transform) {
+                    internal(this).transformers.push(transform);
+                    return this;
+                }
+
+                addAttachmentMapping(id, mapper) {
+                    internal(this).attachmentMappers.push({id: id, mapper: mapper});
+                    return this;
+                }
+
+                addReleaseMapping(mapper) {
+                    internal(this).releaseMappers.push({mapper: mapper});
+                    return this;
+                }
+
+                addEnvironmentMapping(mapper) {
+                    internal(this).environmentMappers.push({mapper: mapper});
+                    return this;
                 }
 
                 //===============================================================================================
@@ -93,23 +115,8 @@ const DevOpsModeller = (function () {
                     return this
                 }
 
-                addAttachmentMapping(id, mapper) {
-                    internal(this).attachmentMappers.push({id: id, mapper: mapper});
-                    return this;
-                }
-
-                addReleaseMapping(mapper) {
-                    internal(this).releaseMappers.push({mapper: mapper});
-                    return this;
-                }
-
-                addEnvironmentMapping(mapper) {
-                    internal(this).environmentMappers.push({mapper: mapper});
-                    return this;
-                }
-
                 build() {
-                    var tracer = new DevOpsModeller(internal(this).devOpsEnumBuilder, internal(this).entModellerBuilder, internal(this).attachmentMappers, internal(this).releaseMappers, internal(this).environmentMappers);
+                    var tracer = new DevOpsModeller(internal(this).devOpsEnumBuilder, internal(this).entModellerBuilder, internal(this).attachmentMappers, internal(this).releaseMappers, internal(this).environmentMappers, internal(this).transformers);
                     return tracer;
                 }
             }
@@ -118,7 +125,7 @@ const DevOpsModeller = (function () {
         }
 
         async modelDevOps() {
-            let results = devopsmodeller(internal(this).devOpsEnumBuilder, internal(this).entModellerBuilder, internal(this).attachmentMappers, internal(this).releaseMappers, internal(this).environmentMappers);
+            let results = devopsmodeller(internal(this).devOpsEnumBuilder, internal(this).entModellerBuilder, internal(this).attachmentMappers, internal(this).releaseMappers, internal(this).environmentMappers, internal(this).transformers);
             return results;
         }
     }

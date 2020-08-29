@@ -60,6 +60,7 @@ async function enumerateDevOps() {
         to: { name: e.MqTopic.value, type: 'queue' }
       }
     })
+    .addNameTransformation(n => n.toLowerCase())
     .build();
 
   modeller.modelDevOps();
