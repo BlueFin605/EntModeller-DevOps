@@ -1,4 +1,4 @@
-var devopsmodeller = require('../src/modeller.js')
+var devopsmodeller = require('./modeller.js')
 var ent = require('@bluefin605/entmodeller')
 var enumBuilder = require('@bluefin605/entmodeller-devops-enumerator')
 
