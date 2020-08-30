@@ -22,7 +22,8 @@ async function modelAzureReleases(devOpsEnumBuilder, entModellerBuilder, attachm
         .build();
 
     let output = await modeller.generateOutput();
-    console.log(output);
+    return output;
+
 }
 
 async function enumerateAzureReleases(devOpsEnumBuilder, attachmentMappers, releaseMappers, environmentMappers, transformers) {
