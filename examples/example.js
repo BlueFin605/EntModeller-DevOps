@@ -42,12 +42,20 @@ async function enumerateDevOps() {
     .addRelationshipFills(relFilles)
     .addEntityFills(entFilles)
     .outputAsDOTDefaultServices(styles)
-    // .outputAsDOT(ss, styles)
+    .outputAsDOT(ss, styles)
     .addAttachmentMapping('appsettings', (r, a, e) => {
       return modellerBuilder.mappers.allChildren(a, (j) => j?.ActiveMQ?.Publishers).map(m => {
         return {
           from: { name: r.pipeline, type: 'service' },
           to: { name: m.Config.SenderLink, type: 'queue' }
+        }
+      })
+    })
+    .addAttachmentMapping('appsettings', (r, a, e) => {
+      return modellerBuilder.mappers.findValues(a, ['topic', 'TopicName']).map(p => {
+        return {
+          from: { name: r.pipeline, type: 'service' },
+          to: { name: p, type: 'queue' }
         }
       })
     })
@@ -63,7 +71,8 @@ async function enumerateDevOps() {
     .addNameTransformation(n => n.toLowerCase())
     .build();
 
-  modeller.modelDevOps();
+  let output = await modeller.modelDevOps();
+  console.log(output);
 }
 
 
