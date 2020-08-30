@@ -135,5 +135,6 @@ const DevOpsModeller = (function () {
 
 module.exports = {
     Builder: DevOpsModeller.Builder,
-    mappers: require('./Helpers')
+    mappers: require('./Helpers'),
+    DotShapes: ent.DotShapes
  }
