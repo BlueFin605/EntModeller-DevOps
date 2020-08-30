@@ -1,20 +1,11 @@
 {
   "name": "@bluefin605/entmodeller-devops",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "license": "ISC",
   "description": "",
-  "main": "./build/enumerator.js",
+  "main": "./build/Builder.js",
   "keywords": [],
   "author": "",
-  "scripts": {
-    "test": "jest ./src",
-    "precompile": "npm run build:clean",
-    "compile": "npm run compile:js",
-    "prepare": "npm run build",
-    "build": "npm run compile",
-    "build:clean": "rimraf build/*",
-    "compile:js": "babel src -d build"
-  },
   "devDependencies": {
     "@babel/cli": "^7.8.4",
     "@babel/core": "^7.9.0",
@@ -26,5 +17,14 @@
   "dependencies": {
     "@bluefin605/entmodeller": "^2.0.18",
     "@bluefin605/entmodeller-devops-enumerator": "^1.0.10"
+  },
+  "scripts": {
+    "test": "jest ./src",
+    "precompile": "npm run build:clean",
+    "compile": "npm run compile:js",
+    "prepare": "npm run build",
+    "build": "npm run compile",
+    "build:clean": "rimraf build/*",
+    "compile:js": "babel src -d build"
   }
 }
