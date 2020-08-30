@@ -42,13 +42,25 @@ async function enumerateAzureReleases(devOpsEnumBuilder, attachmentMappers, rele
         let matches = releasesWithAttachments.filter(r => r.attachments.has(mapper.id));
         matches.forEach(m => {
             let attachment = m.attachments.get(mapper.id);
-            results = results.concat(mapper.mapper(m.release, attachment, m.environment?.variables));
+            let mapped = mapper.mapper(m.release, attachment, m.environment?.variables);
+            if (mapped != null) {
+                if (Array.isArray(mapped))
+                    results = results.concat(mapped);
+                else
+                    results.push(mapped);
+            }
         });
     });
 
     environmentMappers.forEach(mapper => {
         releasesWithEnvironment.forEach(m => {
-            results = results.concat(mapper.mapper(m.release, m.environment?.variables));
+            let mapped = mapper.mapper(m.release, m.environment?.variables);
+            if (mapped != null) {
+                if (Array.isArray(mapped))
+                    results = results.concat(mapped);
+                else
+                    results.push(mapped);
+            }
         });
     });
 
