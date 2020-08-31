@@ -34,6 +34,8 @@ async function enumerateDevOps() {
     lambda: ent.EntModeller.DotShapes.oval,
   }
 
+  let relWithAttachments = [];
+
   var modeller = new modellerBuilder.Builder()
     .setConfigFromFile('examples\\config.json')
     .addDefaultFilter(isDev)
@@ -43,7 +45,11 @@ async function enumerateDevOps() {
     .addEntityFills(entFilles)
     .outputAsDOTDefaultServices(styles)
     .outputAsDOT(ss, styles)
-    .addAttachmentMapping('appsettings', (r, a, e) => {
+    .addPreflightChecks([], c => 
+      c.addAttachmentChecks('appsettings', (payload, r, a, e) => payload.push(r.pipeline))
+      .addAttachmentChecks('appsettings', (payload, r, a, e) => relWithAttachments.push(r.pipeline))
+    )
+    .addAttachmentMapping('appsettings', (payload, r, a, e) => {
       return modellerBuilder.mappers.allChildren(a, (j) => j?.ActiveMQ?.Publishers).map(m => {
         return {
           from: { name: r.pipeline, type: 'service' },
@@ -51,7 +57,7 @@ async function enumerateDevOps() {
         }
       })
     })
-    .addAttachmentMapping('appsettings', (r, a, e) => {
+    .addAttachmentMapping('appsettings', (payload, r, a, e) => {
       return modellerBuilder.mappers.findValues(a, ['topic', 'TopicName']).map(p => {
         return {
           from: { name: r.pipeline, type: 'service' },
@@ -59,7 +65,7 @@ async function enumerateDevOps() {
         }
       })
     })
-    .addEnvironmentMapping((r, e) => {
+    .addEnvironmentMapping((payload, r, e) => {
       if (e.MqTopic == null)
         return [];
 

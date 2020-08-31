@@ -15,13 +15,14 @@ const DevOpsModeller = (function () {
     }
 
     class DevOpsModeller {
-        constructor(devOpsEnumBuilder, entModellerBuilder, attachmentMappers, releaseMappers, environmentMappers, transformers) {
+        constructor(devOpsEnumBuilder, entModellerBuilder, attachmentMappers, releaseMappers, environmentMappers, transformers, preflightChecks) {
             internal(this).devOpsEnumBuilder = devOpsEnumBuilder;
             internal(this).entModellerBuilder = entModellerBuilder;
             internal(this).attachmentMappers = attachmentMappers;
             internal(this).releaseMappers = releaseMappers;
             internal(this).environmentMappers = environmentMappers;
             internal(this).transformers = transformers;
+            internal(this).preflightChecks = preflightChecks;
         }
 
         static get Builder() {
@@ -33,6 +34,7 @@ const DevOpsModeller = (function () {
                     internal(this).transformers = [];
                     internal(this).entModellerBuilder = new ent.EntModeller.Builder();
                     internal(this).devOpsEnumBuilder = new enumBuilder.Builder();
+                    internal(this).PreflightBuilder = new PreflightBuilder();
                 }
 
                 addNameTransformation(transform) {
@@ -52,6 +54,12 @@ const DevOpsModeller = (function () {
 
                 addEnvironmentMapping(mapper) {
                     internal(this).environmentMappers.push({mapper: mapper});
+                    return this;
+                }
+
+                addPreflightChecks(initial, checks) {
+                    internal(this).PreflightBuilder.setInitialPayload(initial);
+                    checks(internal(this).PreflightBuilder);
                     return this;
                 }
 
@@ -116,8 +124,45 @@ const DevOpsModeller = (function () {
                 }
 
                 build() {
-                    var tracer = new DevOpsModeller(internal(this).devOpsEnumBuilder, internal(this).entModellerBuilder, internal(this).attachmentMappers, internal(this).releaseMappers, internal(this).environmentMappers, internal(this).transformers);
+                    var tracer = new DevOpsModeller(internal(this).devOpsEnumBuilder, internal(this).entModellerBuilder, internal(this).attachmentMappers, internal(this).releaseMappers, internal(this).environmentMappers, internal(this).transformers, internal(this).PreflightBuilder.build());
                     return tracer;
+                }
+            }
+
+            class PreflightBuilder {
+                constructor() {
+                    internal(this).attachmentChecks = [];
+                    internal(this).environmentChecks = [];
+                    internal(this).releaseChecks = [];
+                }
+
+                setInitialPayload(initialValue) {
+                    internal(this).initialValue = initialValue;
+                    return this;
+                }
+
+                addAttachmentChecks(id, checker) {
+                    internal(this).attachmentChecks.push({id: id, checker: checker});
+                    return this;
+                }
+
+                addReleaseChecks(checker) {
+                    internal(this).releaseChecks.push({checker: checker});
+                    return this;
+                }
+
+                addEnvironmentChecks(checker) {
+                    internal(this).environmentChecks.push({checker: checker});
+                    return this;
+                }
+
+                build() {
+                    return {
+                        payload: internal(this).initialValue, 
+                        envChecks: internal(this).environmentChecks, 
+                        attChecks: internal(this).attachmentChecks, 
+                        relChecks: internal(this).relChecks
+                    }
                 }
             }
 
@@ -125,7 +170,7 @@ const DevOpsModeller = (function () {
         }
 
         async modelDevOps() {
-            let results = devopsmodeller(internal(this).devOpsEnumBuilder, internal(this).entModellerBuilder, internal(this).attachmentMappers, internal(this).releaseMappers, internal(this).environmentMappers, internal(this).transformers);
+            let results = devopsmodeller(internal(this).devOpsEnumBuilder, internal(this).entModellerBuilder, internal(this).attachmentMappers, internal(this).releaseMappers, internal(this).environmentMappers, internal(this).transformers, internal(this).preflightChecks);
             return results;
         }
     }
