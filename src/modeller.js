@@ -1,6 +1,6 @@
 class myAzureSource {
-    constructor(devOpsEnumBuilder, attachmentMappers, releaseMappers, environmentMappers, transformers, preflightChecks) {
-        this.devOpsEnumBuilder = devOpsEnumBuilder;
+    constructor(devOpsEnum, attachmentMappers, releaseMappers, environmentMappers, transformers, preflightChecks) {
+        this.devOpsEnum = devOpsEnum;
         this.attachmentMappers = attachmentMappers;
         this.releaseMappers = releaseMappers;
         this.environmentMappers = environmentMappers;
@@ -10,13 +10,13 @@ class myAzureSource {
 
     generateSourceConnections() {
         return new Promise((resolve, reject) => {
-            resolve(enumerateAzureReleases(this.devOpsEnumBuilder, this.attachmentMappers, this.releaseMappers, this.environmentMappers, this.transformers, this.preflightChecks))
+            resolve(enumerateAzureReleases(this.devOpsEnum, this.attachmentMappers, this.releaseMappers, this.environmentMappers, this.transformers, this.preflightChecks))
         });
     }
 }
 
 async function modelAzureReleases(devOpsEnumBuilder, entModellerBuilder, attachmentMappers, releaseMappers, environmentMappers, transformers, preflightChecks) {
-    var enumerator = devOpsEnumBuilder.build();
+    var enumerator = devOpsEnumBuilder.latestReleasesOnly().build();
 
     var modeller = entModellerBuilder        
         .addSource("Azure", new myAzureSource(enumerator, attachmentMappers, releaseMappers, environmentMappers, transformers, preflightChecks), null)
@@ -27,8 +27,10 @@ async function modelAzureReleases(devOpsEnumBuilder, entModellerBuilder, attachm
 
 }
 
-async function enumerateAzureReleases(devOpsEnumBuilder, attachmentMappers, releaseMappers, environmentMappers, transformers, preflightChecks) {
-    let releases = await devOpsEnumBuilder.enumerateDevOps()
+async function enumerateAzureReleases(devOpsEnum, attachmentMappers, releaseMappers, environmentMappers, transformers, preflightChecks) {
+    let allReleases = await devOpsEnum.enumerateDevOps()
+
+    let releases = allReleases.reduce((acc, val) => acc.concat(val.items), []);
 
     // console.log('---------------------------------------------------------------')
     // console.log(JSON.stringify(releases));
@@ -58,8 +60,10 @@ async function enumerateAzureReleases(devOpsEnumBuilder, attachmentMappers, rele
         });
     });
 
-    releaseMappers.forEach(mapper => {
-        checker.checker(payload, m.release, m.environment?.variables, r.attachments);
+    preflightChecks.relChecks.forEach(checker => {
+        releases.forEach(m => {
+            checker.checker(payload, m.release, m.environment?.variables);
+        });
     });
 
     // call mappers

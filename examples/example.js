@@ -35,11 +35,13 @@ async function enumerateDevOps() {
   }
 
   let relWithAttachments = [];
+  let releases = [];
 
   var modeller = new modellerBuilder.Builder()
     .setConfigFromFile('examples\\config.json')
-    .addDefaultFilter(isDev)
+    .useDefaultFilter(isDev)
     .addAttachment('appsettings', 'appsettings.json', (a) => a.relativePath.includes('Unit') === false, enumBuilder.JsonMapper)
+    .retrieveEnvironmentVariables()
     .addEntityOverrides(overides)
     .addRelationshipFills(relFilles)
     .addEntityFills(entFilles)
@@ -48,6 +50,7 @@ async function enumerateDevOps() {
     .addPreflightChecks([], c => 
       c.addAttachmentChecks('appsettings', (payload, r, a, e) => payload.push(r.pipeline))
       .addAttachmentChecks('appsettings', (payload, r, a, e) => relWithAttachments.push(r.pipeline))
+      .addReleaseChecks((payload, r, a, e) => releases.push(r))
     )
     .addAttachmentMapping('appsettings', (payload, r, a, e) => {
       return modellerBuilder.mappers.allChildren(a, (j) => j?.ActiveMQ?.Publishers).map(m => {

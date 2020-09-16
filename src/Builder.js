@@ -85,8 +85,8 @@ const DevOpsModeller = (function () {
                     return this
                 }
 
-                addDefaultFilter(nameParser) {
-                    internal(this).devOpsEnumBuilder.addDefaultFilter(nameParser);
+                useDefaultFilter(nameParser) {
+                    internal(this).devOpsEnumBuilder.useDefaultFilter(nameParser);
                     return this
                 }
                 
@@ -95,6 +95,10 @@ const DevOpsModeller = (function () {
                     return this
                 }
 
+                retrieveEnvironmentVariables() {
+                    internal(this).devOpsEnumBuilder.retrieveEnvironmentVariables();
+                    return this
+                }                
 
                 //===============================================================================================
                 // EntModeller builders
@@ -161,7 +165,7 @@ const DevOpsModeller = (function () {
                         payload: internal(this).initialValue, 
                         envChecks: internal(this).environmentChecks, 
                         attChecks: internal(this).attachmentChecks, 
-                        relChecks: internal(this).relChecks
+                        relChecks: internal(this).releaseChecks
                     }
                 }
             }
