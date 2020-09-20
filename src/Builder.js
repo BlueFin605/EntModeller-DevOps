@@ -90,8 +90,8 @@ const DevOpsModeller = (function () {
                     return this
                 }
                 
-                addAttachment(id, filename, filter, mapper) {
-                    internal(this).devOpsEnumBuilder.addAttachment(id, filename, filter, mapper);
+                addAttachment(id, filename, filter, responseType) {
+                    internal(this).devOpsEnumBuilder.addAttachment(id, filename, filter, responseType);
                     return this
                 }
 
