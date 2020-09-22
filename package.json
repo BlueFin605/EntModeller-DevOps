@@ -1,6 +1,6 @@
 {
   "name": "@bluefin605/entmodeller-devops",
-  "version": "2.1.1",
+  "version": "2.1.2",
   "license": "ISC",
   "description": "",
   "main": "./build/Builder.js",
@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@bluefin605/entmodeller": "^2.0.18",
-    "@bluefin605/entmodeller-devops-enumerator": "^3.0.0"
+    "@bluefin605/entmodeller-devops-enumerator": "^3.0.1"
   },
   "scripts": {
     "test": "jest ./src",
